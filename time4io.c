@@ -8,6 +8,7 @@ int getsw(){
 }
 
 int getbtns(){
-    int readData = (PORTD & 0x0e0) >> 5; // 0000 0000 1110 0000  bits 5-7 are being read
+    int readBtn1 = (PORTF & 0x02) >> 1;  // BTN1 value
+    int readData = ((PORTD & 0x0e0) >> 4) | readBtn1; // 0000 0000 1110 0000  bits 5-7 are being read
     return readData;
 }
