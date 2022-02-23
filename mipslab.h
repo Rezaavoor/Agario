@@ -57,4 +57,17 @@ void enable_interrupt(void);
 
 /////mini project stuff
 extern uint8_t screen[512];
+void setupScreen();
+void clearScreen();
 void markPixel (int x, int y);
+void unmarkPixel (int x, int y);
+void markRect (int x, int y, int s);
+void unmarkRect (int index);
+void moveRect (int rectIndex, int x, int y);
+int rectangles[30][3];
+int randomGen(int min, int max);
+void createAgario();
+void unmarkAgario();
+void markAgario();
+void moveAgario(int xOffset, int yOffset);
+void checkHit();

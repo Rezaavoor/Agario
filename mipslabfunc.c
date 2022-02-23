@@ -179,62 +179,7 @@ void display_image(int x, const uint8_t *data)
   }
 }
 
-void markPixel (int x, int y){																// By Mattias
 
-	if(y<0 | x<0){
-		x= -1;
-		y=-1;
-	}
-
-
-	if(x>127 | y > 32){
-		x= -1;
-		y=-1;
-	}
-
-		if(y>= 8 && y<16){
-			y=y-8;
-			x = x +128;
-			if(x<129 | x>257){
-				x= -1;
-			}
-		}
-
-		if(y>= 16 && y<24){
-			y=y-16;
-			x = x +256;
-			if(x<257 | x>384){
-				x= -1;
-			}
-		}
-
-		if(y>= 24 && y<32){
-			y=y-24;
-			x = x +384;
-			if(x<384 | x>512){
-				x= -1;
-			}
-		}
-
-		if(y==0){
-			int write = ~1;
-			screen[x] = screen[x] & write;
-			}
-
-			else {
-
-				int k = 1;
-				int l;
-
-				for(l=1; l<8; l++){
-					k *= 2;
-					if(y==l){
-							int write = ~k;
-							screen[x] = screen[x] & write;
-					}
-				}
-			}
-}
 
 void display_update(void)
 {
