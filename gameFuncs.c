@@ -5,21 +5,79 @@
 //#include "time.h"
 
 
-int rectangles[30][3];
+float rectangles[30][3];
 int rectanglesIndex = 0;
-int agario[3] = { 64, 16, 5};
+float agario[3];
+int score = 0;
+
+int START = 0, IN_GAME = 1, GAME_OVER = 2;
+int gameMode = 0; // START
 
 
 /*int randomGen(int min, int max){
   //srand(time(0));
   return (rand() % (max - min + 1)) + min;
 }*/
+void clearScreen(){
+  display_string(0, "");
+  display_string(1, "");
+  display_string(2, "");
+  display_string(3, "");
+  display_update();
+
+  int i = 0;
+  for(i = 0; i<512;i++){
+    screen[i] = 255;
+  }
+}
+
+void setupScreen(){
+  clearScreen();
+  createAgario();  
+  rectanglesIndex = 0;
+  markRect(100, 15, 1);
+  markRect(750, 15, 2);
+  markRect(50, 15, 3);
+  markRect(110, 15, 4);
+  markRect(46, 15, 5);
+  markRect(70, 15, 15);
+
+}
+
+void start(){
+  clearScreen();
+  display_string(1, "   Agario!!!!");
+  display_update();
+  delay(1800);
+  display_string(1, "ARE YOU READY???");
+  display_update();
+  delay(1500);
+  display_string(1, "        3");
+  display_update();
+  delay(1000);
+  display_string(1, "        2");
+  display_update();
+  delay(1000);
+  display_string(1, "        1");
+  display_update();
+  delay(1000);
+
+  gameMode = IN_GAME;
+  setupScreen();
+
+}
+
+
+void showGameOver(){
+  gameMode = GAME_OVER;
+}
 
 void createAgario(){
   int i;
-  int x = agario[0];
-  int y = agario[1];
-  int s = agario[2];
+  int x = 64, y = 16, s = 5;
+  agario[0] = x;
+  agario[1] = y;
+  agario[2] = s;
 
   for(i=0; i<s; i++)
     markPixel(x+i, y);
@@ -34,27 +92,6 @@ void createAgario(){
     markPixel(x+i, y+s);
 }
 
-void setupScreen(){
-
-  display_string(0, "");
-  display_string(1, "");
-  display_string(2, "");
-  display_string(3, "");
-  display_update();
-
-  int i = 0;
-  for(i = 0; i<512;i++){
-    screen[i] = 255;
-  }
-  createAgario();  
-}
-
-void clearScreen(){
-  int i = 0;
-  for(i = 0; i<512;i++){
-    screen[i] = 255;
-  }
-}
 
 void markRect(int x, int y, int s){
   int i,j;
@@ -67,6 +104,50 @@ void markRect(int x, int y, int s){
   rectangles[rectanglesIndex][1] = y;
   rectangles[rectanglesIndex][2] = s;
   rectanglesIndex++;
+}
+void updateRect(int index, int x, int y, int s){
+  int i,j;
+  for(i=x; i < x+s; i++){
+    for(j=y; j < y+s; j++){
+      markPixel(i,j);
+    }
+  }
+  rectangles[index][0] = x;
+  rectangles[index][1] = y;
+  rectangles[index][2] = s;
+}
+
+void unmarkRect(int index){
+
+  int x = rectangles[index][0];
+  int y = rectangles[index][1];
+  int s = rectangles[index][2];
+  int i,j;
+  for(i=x; i < x+s; i++){
+    for(j=y; j < y+s; j++){
+      unmarkPixel(i,j);
+    }
+  }
+}
+
+void moveRect(int rectIndex, int xOffset, int yOffset){
+  unmarkRect(rectIndex);
+  int x = rectangles[rectIndex][0];
+  int y = rectangles[rectIndex][1];
+  int s = rectangles[rectIndex][2];
+
+  int newX = x+xOffset;
+  int newY = y+yOffset;
+
+  if(newX > 127) newX = -s;
+  if(newY > 32) newY = -s;
+  if(newX < -s) newX = 127;
+  if(newY < -s) newY = 32;
+ 
+  rectangles[rectIndex][0] = newX;
+  rectangles[rectIndex][1] = newY;
+
+  updateRect(rectIndex, newX, newY, s);
 }
 
 void markAgario(){
@@ -111,50 +192,28 @@ void moveAgario(int xOffset, int yOffset){
   unmarkAgario();
   int newX = agario[0] + xOffset;
   int newY = agario[1] + yOffset;
+  int s = agario[2];
 
-  if(newX > 127) newX = 0;
-  if(newY > 32) newY = 0;
-  if(newX < 0) newX = 127;
-  if(newY < 0) newY = 32;
+  if(newX > 127) newX = -s;
+  if(newY > 32) newY = -s;
+  if(newX < -s) newX = 127;
+  if(newY < -s) newY = 32;
 
   agario[0] = newX;
   agario[1] = newY;
 
   markAgario();
 }
-
-void unmarkRect(int index){
-
-  int x = rectangles[index][0];
-  int y = rectangles[index][1];
-  int s = rectangles[index][2];
+void clearScoreboard(){
   int i,j;
-  for(i=x; i < x+s; i++){
-    for(j=y; j < y+s; j++){
+  for(i=0; i<29; i++){
+    for(j=0; j<5; j++){
       unmarkPixel(i,j);
     }
   }
 }
 
-void moveRect(int rectIndex, int xOffset, int yOffset){
-  unmarkRect(rectIndex);
-  int x = rectangles[rectIndex][0];
-  int y = rectangles[rectIndex][1];
-  int s = rectangles[rectIndex][2];
 
-  int newX = x+xOffset;
-  int newY = y+yOffset;
-
-  if(newX > 127) newX = 0;
-  if(newY > 32) newY = 0;
-  if(newX < 0) newX = 127;
-  if(newY < 0) newY = 32;
- 
-  rectangles[rectIndex][0] = newX;
-  rectangles[rectIndex][1] = newY;
-
-  markRect(newX, newY, s);
-}
 
 void markPixel (int x, int y){
 	if(y<0 | x<0){
@@ -251,6 +310,238 @@ void unmarkPixel (int x, int y){
     }
 }
 
+void showScoreString(){
+  //S
+  markPixel(0,0);
+  markPixel(1,0);
+  markPixel(2,0);
+  markPixel(0,1);
+  markPixel(0,2);
+  markPixel(1,2);
+  markPixel(2,2);
+  markPixel(2,3);
+  markPixel(0,4);
+  markPixel(1,4);
+  markPixel(2,4);
+
+  //C
+  markPixel(4,0);
+  markPixel(5,0);
+  markPixel(6,0);
+  markPixel(4,1);
+  markPixel(4,2);
+  markPixel(4,3);
+  markPixel(4,4);
+  markPixel(5,4);
+  markPixel(6,4);
+
+  //O
+  markPixel(8,0);
+  markPixel(9,0);
+  markPixel(10,0);
+  markPixel(8,1);
+  markPixel(10,1);
+  markPixel(8,2);
+  markPixel(10,2);
+  markPixel(8,3);
+  markPixel(10,3);
+  markPixel(8,4);
+  markPixel(9,4);
+  markPixel(10,4);
+
+  //R
+  markPixel(12,0);
+  markPixel(13,0);
+  markPixel(14,0);
+  markPixel(12,1);
+  markPixel(14,1);
+  markPixel(12,2);
+  markPixel(13,2);
+  markPixel(14,2);
+  markPixel(12,3);
+  markPixel(13,3);
+  markPixel(12,4);
+  markPixel(14,4);
+  
+  //E
+  markPixel(16,0);
+  markPixel(17,0);
+  markPixel(18,0);
+  markPixel(16,1);
+  markPixel(16,2);
+  markPixel(17,2);
+  markPixel(18,2);
+  markPixel(16,3);
+  markPixel(16,4);
+  markPixel(17,4);
+  markPixel(18,4);
+
+  //:
+  markPixel(20,1);
+  markPixel(20,3);
+}
+void showDigit(int score, int x, int y){
+  switch (score)
+  {
+  case 0:
+    markPixel(0 + x,0 + y);
+    markPixel(1 + x,0 + y);
+    markPixel(2 + x,0 + y);
+    markPixel(0 + x,1 + y);
+    markPixel(2 + x,1 + y);
+    markPixel(0 + x,2 + y);
+    markPixel(0 + x,3 + y);
+    markPixel(0 + x,4 + y);
+    markPixel(1 + x,4 + y);
+    markPixel(2 + x,4 + y);
+    markPixel(2 + x,3 + y);
+    markPixel(2 + x,2 + y);
+    break;
+  case 1:
+    markPixel(1 + x,0 + y);
+    markPixel(1 + x,1 + y);
+    markPixel(1 + x,2 + y);
+    markPixel(1 + x,3 + y);
+    markPixel(1 + x,4 + y);
+    break;
+  case 2:
+    markPixel(0 + x,0 + y);
+    markPixel(1 + x,0 + y);
+    markPixel(2 + x,0 + y);
+    markPixel(2 + x,1 + y);
+    markPixel(2 + x,2 + y);
+    markPixel(1 + x,2 + y);
+    markPixel(0 + x,2 + y);
+    markPixel(0 + x,3 + y);
+    markPixel(0 + x,4 + y);
+    markPixel(1 + x,4 + y);
+    markPixel(2 + x,4 + y);
+    break;
+  case 3:
+    markPixel(0 + x,0 + y);
+    markPixel(1 + x,0 + y);
+    markPixel(2 + x,0 + y);
+    markPixel(2 + x,1 + y);
+    markPixel(2 + x,2 + y);
+    markPixel(1 + x,2 + y);
+    markPixel(0 + x,2 + y);
+    markPixel(2 + x,3 + y);
+    markPixel(2 + x,4 + y);
+    markPixel(1 + x,4 + y);
+    markPixel(0 + x,4 + y);
+    break;
+  case 4:
+    markPixel(0 + x,0 + y);
+    markPixel(0 + x,1 + y);
+    markPixel(0 + x,2 + y);
+    markPixel(1 + x,2 + y);
+    markPixel(2 + x,2 + y);
+    markPixel(2 + x,1 + y);
+    markPixel(2 + x,0 + y);
+    markPixel(2 + x,3 + y);
+    markPixel(2 + x,4 + y);
+    break;
+  case 5:
+    markPixel(0 + x,0 + y);
+    markPixel(1 + x,0 + y);
+    markPixel(2 + x,0 + y);
+    markPixel(0 + x,1 + y);
+    markPixel(0 + x,2 + y);
+    markPixel(1 + x,2 + y);
+    markPixel(2 + x,2 + y);
+    markPixel(2 + x,3 + y);
+    markPixel(0 + x,4 + y);
+    markPixel(1 + x,4 + y);
+    markPixel(2 + x,4 + y);
+    break;
+  case 6:
+    markPixel(0 + x,0 + y);
+    markPixel(1 + x,0 + y);
+    markPixel(2 + x,0 + y);
+    markPixel(0 + x,1 + y);
+    markPixel(0 + x,2 + y);
+    markPixel(1 + x,2 + y);
+    markPixel(2 + x,2 + y);
+    markPixel(2 + x,3 + y);
+    markPixel(0 + x,3 + y);
+    markPixel(0 + x,4 + y);
+    markPixel(1 + x,4 + y);
+    markPixel(2 + x,4 + y);
+    
+    break;
+  case 7:
+    markPixel(0 + x,0 + y);
+    markPixel(1 + x,0 + y);
+    markPixel(2 + x,0 + y);
+    markPixel(2 + x,1 + y);
+    markPixel(2 + x,2 + y);
+    markPixel(2 + x,3 + y);
+    markPixel(2 + x,4 + y);
+    break;
+  case 8:
+    markPixel(0 + x,0 + y);
+    markPixel(1 + x,0 + y);
+    markPixel(2 + x,0 + y);
+    markPixel(0 + x,1 + y);
+    markPixel(2 + x,1 + y);
+    markPixel(0 + x,2 + y);
+    markPixel(1 + x,2 + y);
+    markPixel(0 + x,3 + y);
+    markPixel(0 + x,4 + y);
+    markPixel(1 + x,4 + y);
+    markPixel(2 + x,4 + y);
+    markPixel(2 + x,3 + y);
+    markPixel(2 + x,2 + y);
+    break;
+  case 9:
+    markPixel(0 + x,0 + y);
+    markPixel(1 + x,0 + y);
+    markPixel(2 + x,0 + y);
+    markPixel(0 + x,1 + y);
+    markPixel(2 + x,1 + y);
+    markPixel(0 + x,2 + y);
+    markPixel(1 + x,2 + y);
+    markPixel(0 + x,4 + y);
+    markPixel(1 + x,4 + y);
+    markPixel(2 + x,4 + y);
+    markPixel(2 + x,3 + y);
+    markPixel(2 + x,2 + y);
+    break;
+  
+  default:
+    markPixel(0 + x,0 + y);
+    break;
+  }
+}
+
+void showScore(int score){
+  clearScoreboard();
+  showScoreString();
+  if(score<10)
+    showDigit(score, 23, 0);
+  else{
+    showDigit(score%10, 27, 0);
+    showDigit(score/10, 23, 0);
+  }
+}
+void eatOrBeFed(int index){
+  int recS = rectangles[index][2];
+  float agarS = agario[2];
+  if(recS < agarS){
+    //eat
+    unmarkRect(index);
+    unmarkAgario();
+    rectangles[index][2] = 0;
+    agario[2] += (recS + 1.0)/agarS; // growth depends on rectangles size
+    score++;
+    return;
+  }
+  else {
+    //be fed
+    showGameOver();
+  }
+}
+
 void checkHit(){
   int x1 = agario[0],
       x2 = agario[0]+ agario[2], 
@@ -268,24 +559,12 @@ void checkHit(){
         if(i > x1 && i < x2){
           if(j > y1 && j < y2){
             //HIT
-            eatOrBeat(index);
-            return 0;
+            eatOrBeFed(index);
+            return;
           }
         }
 
       }
     }
-  }
-}
-
-void eatOrBeat(int index){
-  int recS = rectangles[index][2];
-  int agarS = agario[2];
-  if(recS < agarS){
-    unmarkRect(index);
-    unmarkAgario();
-    rectangles[index][2] = 0;
-    agario[2] += 1;
-    return 0;
   }
 }
