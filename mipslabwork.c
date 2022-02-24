@@ -58,16 +58,6 @@ void labinit( void )
 
   T3CON |= 0x8000; // ON = 1 => bit 15 is 1 => timer is enabled
 
-  setupScreen();
-  markRect(20, 5, 7);
-  markRect(100, 15, 1);
-  markRect(50, 1, 1);
-  //markRect(110, 30, 1);
-  //markRect(46, 2, 2);
-  //markRect(70, 8, 10);
-
-  createAgario();
-
   return;
 }
 
@@ -78,43 +68,40 @@ int counter = 0x00;
 
 
 
-int x=5,y=0;
+int wait = 1;
 void labwork( void )
 {
-  
-  /*int btnData = getbtns();  // ex: 4 = 100 = BTN4 is pressed
-  int swData = getsw();   // ex: 15 = 1111 = all switches are 1 
-
-  if (btnData & 4){
-    mytime &= 0x0fff; // ex: myTime = 0x5957 => mytime = 0x0957
-    mytime += swData*16*16*16; // ex: swData=4 => firstDigit = 0x4000
-  }
-  if (btnData & 2){
-      mytime &= 0xf0ff; // ex: myTime = 0x5957 => mytime = 0x5057
-      mytime += swData*16*16;  // ex: swData=4 => firstDigit = 0x0400
-  }
-  if(btnData & 1){
-        mytime &= 0xff0f; // ex: myTime = 0x5957 => mytime = 0x5907
-        mytime += swData*16;  // ex: swData=4 => firstDigit = 0x0040 
-  }*/
-
   if((IFS(0)>>12) & 1){
     IFS(0) &= 0xffffefff;
     timeoutcount3++;
     if(timeoutcount3==5){
       int btnData = getbtns();
 
-      if(btnData & 8){  // 1000
-        moveAgario(-1, 0);
+      if(gameMode == IN_GAME){
+        // game mode
+        if(btnData & 8){  // 1000
+          moveAgario(-1, 0);
+        }
+        if(btnData & 4){  // 0100
+          moveAgario(0, 1);
+        }
+        if(btnData & 2){  // 0010
+          moveAgario(0, -1);
+        }
+        if(btnData & 1){  // 0001
+          moveAgario(1, 0);
+        }
       }
-      if(btnData & 4){  // 0100
-        moveAgario(0, 1);
-      }
-      if(btnData & 2){  // 0010
-        moveAgario(0, -1);
-      }
-      if(btnData & 1){  // 0001
-        moveAgario(1, 0);
+      else if(gameMode == GAME_OVER){
+        // gameover mode
+        if(!wait){
+          if ( btnData != 0){
+            gameMode = IN_GAME;
+            score = 0;
+            setupScreen();
+            wait = 1;
+          }
+        }
       }
       timeoutcount3 = 0;
     }
@@ -131,13 +118,66 @@ void labwork( void )
       *portE = counter;
       counter += 0x1; // +1   
     
-      checkHit();
+      if(gameMode == START){
+        start();
+      }
+      else if(gameMode == IN_GAME){
+        checkHit();
 
-      moveRect(0, -1, 0);
-      moveRect(1, 1, 0);
-      moveRect(2, 4, 2);
-      markAgario();
-      display_image(0, screen);
+        moveRect(0, 1, 1);
+        moveRect(1, 4, 2);
+        moveRect(2, -2, 1);
+        moveRect(3, 1, 0);
+        moveRect(4, 1, -3);
+        moveRect(5, 4, 1);
+        
+        markAgario();
+
+        showScore(score);
+        display_image(0, screen);
+      }
+      else if(gameMode == GAME_OVER){
+        wait = 1;
+        clearScreen();
+        display_string(0, "    Game Over");
+        display_string(1, "");
+        display_update();
+        delay(2000);
+        display_string(1, "     Score:");
+        display_update();
+        delay(1000);
+        //show score
+        if(score<10)
+          showDigit(score, 64, 18);
+        else{
+          showDigit(score%10, 65, 18);
+          showDigit(score/10, 63, 18);
+        }
+        
+        display_image(0, screen);
+        delay(1200);
+        display_string(0, "Press any button");
+        display_string(1, "  to play again");
+        display_update();
+        wait = 0;
+        delay(1500);
+        display_string(0, "");
+        display_string(1, "");
+        display_update();
+        delay(1000);
+        display_string(0, "Press any button");
+        display_string(1, "  to play again.");
+        display_update();
+        delay(1000);
+        display_string(0, "");
+        display_string(1, "");
+        display_update();
+        delay(1000);
+        display_string(0, "Press any button");
+        display_string(1, "  to play again.");
+        display_update();
+        delay(1500);
+      }
 
       ////////////////////////////////////////
 
