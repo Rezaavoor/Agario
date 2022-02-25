@@ -3,6 +3,7 @@ DEVICE		= 32MX320F128H
 
 # UART settings for programmer
 TTYDEV		?=/dev/cu.usbserial-A6003XFZ
+# Hi I am here!
 TTYBAUD		?=115200
 
 # Name of the project
