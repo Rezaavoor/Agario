@@ -1,3 +1,5 @@
 **.o
 /.deps
 /.vscode
+outfile.elf
+outfile.hex
