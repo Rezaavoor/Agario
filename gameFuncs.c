@@ -10,12 +10,10 @@ int rectanglesIndex = 0;
 float agario[3];
 int score = 0;
 
-int START = 0, IN_GAME = 1, GAME_OVER = 2;
+int START = 0, IN_GAME = 1, GAME_OVER = 2, WIN = 3;
 int gameMode = 0; // START
 
-
 int randomGen(int min, int max){
-  int test = rand();
   int randomNumber = (TMR3 / TMR2) * rectanglesIndex + agario[0] - agario[1];
   return (randomNumber % (max - min + 1)) + min;
 }
@@ -36,12 +34,12 @@ void setupScreen(){
   clearScreen();
   createAgario();  
   rectanglesIndex = 0;
-  markRect(100, 15, 1);
-  markRect(750, 15, 2);
-  markRect(50, 15, 3);
-  markRect(110, 15, 4);
-  markRect(46, 15, 5);
-  markRect(70, 15, 15);
+  markRect(10 + (randomGen(0, 117)), 3+ (randomGen(0, 29)), 8+ (randomGen(0, 3)));
+  markRect(25 + (randomGen(0, 102)), 10+ (randomGen(0, 22)), 8+ (randomGen(0, 4)));
+  markRect(15 + (randomGen(0, 113)), 15+ (randomGen(0, 17)), 2+ (randomGen(0, 4)));
+  markRect(10 + (randomGen(0, 117)), 17+ (randomGen(0, 15)), 1+ (randomGen(0, 4)));
+  markRect(0 + (randomGen(0, 127)), 20+ (randomGen(0, 12)), 1+ (randomGen(0, 4)));
+  //markRect(4 + (randomGen(0, 123)), 7+ (randomGen(0, 25)), 1+ (randomGen(0, 4)));
 
 }
 
@@ -527,9 +525,23 @@ void eatOrBeFed(int index){
     //eat
     unmarkRect(index);
     unmarkAgario();
-    rectangles[index][2] = 0;
+    if(index == 0 || index == 1){
+      rectangles[index][2] = agario[2] + randomGen(0, 5);
+    }
+    else {
+      rectangles[index][2] += randomGen(0, (10-(rectangles[index][2]) ) );
+    }
+    rectangles[index][0] += randomGen(0, (127-(rectangles[index][0]) ) );
+    rectangles[index][1] += randomGen(0, (32-(rectangles[index][1]) ) );
+
     agario[2] += (recS + 1.0)/agarS; // growth depends on rectangles size
     score++;
+    
+    //check win possibility
+    if(agario[2] >= 10){
+      gameMode = WIN;
+    }
+
     return;
   }
   else {
