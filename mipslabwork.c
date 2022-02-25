@@ -38,7 +38,7 @@ void labinit( void )
   TRISF &= 0x2; //  0000 0010 => BTN1 = output
   TRISD |= 0x0FE0; // 0000 1111 1110 0000     bits 5-11 are inputs
 
-
+   // just for demo
   //Timer 2
   T2CON = 0x70; // TCKPS = 111 =>  0111 0000 bit 4-6 are all 1 => prescaling 1:256
   T2CON &= 0xFD; // TCS = 0 => bit 1 is 0 => internal peripheral clock gets used
