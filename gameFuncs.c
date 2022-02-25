@@ -14,10 +14,11 @@ int START = 0, IN_GAME = 1, GAME_OVER = 2;
 int gameMode = 0; // START
 
 
-/*int randomGen(int min, int max){
-  //srand(time(0));
-  return (rand() % (max - min + 1)) + min;
-}*/
+int randomGen(int min, int max){
+  int test = rand();
+  int randomNumber = (TMR3 / TMR2) * rectanglesIndex + agario[0] - agario[1];
+  return (randomNumber % (max - min + 1)) + min;
+}
 void clearScreen(){
   display_string(0, "");
   display_string(1, "");
@@ -65,11 +66,6 @@ void start(){
   gameMode = IN_GAME;
   setupScreen();
 
-}
-
-
-void showGameOver(){
-  gameMode = GAME_OVER;
 }
 
 void createAgario(){
@@ -537,8 +533,8 @@ void eatOrBeFed(int index){
     return;
   }
   else {
-    //be fed
-    showGameOver();
+    //be fed = game over
+    gameMode = GAME_OVER;
   }
 }
 
