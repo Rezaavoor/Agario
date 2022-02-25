@@ -73,5 +73,5 @@ void moveAgario(int xOffset, int yOffset);
 void checkHit();
 void showScore(int score);
 int score;
-int gameMode, START, IN_GAME, GAME_OVER;
+int gameMode, START, IN_GAME, GAME_OVER, WIN;
 void showDigit(int score, int x, int y);

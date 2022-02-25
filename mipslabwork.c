@@ -14,21 +14,12 @@
 #include <pic32mx.h>  /* Declarations of system-specific addresses etc */
 #include "mipslab.h"  /* Declatations for these labs */
 
-int mytime = 0x4557;
 int timeoutcount2 = 0;
 int timeoutcount3 = 0;
-
-char textstring[] = "text, more text, and even more text!";
-
-// project stuff
-
-
-
-/* Interrupt Service Routine */
-void user_isr( void )
-{
-  return;
-}
+volatile int* portE = (volatile int*) 0xbf886110; //  =PORTE
+int counter = 0x00;
+int wait = 1;
+int menuCounter = 0;
 
 /* Lab-specific initialization goes here */
 
@@ -63,12 +54,6 @@ void labinit( void )
 
 /* This function is called repetitively from the main program */
 
-volatile int* portE = (volatile int*) 0xbf886110; //  =PORTE
-int counter = 0x00;
-
-
-
-int wait = 1;
 void labwork( void )
 {
   if((IFS(0)>>12) & 1){
@@ -92,14 +77,15 @@ void labwork( void )
           moveAgario(1, 0);
         }
       }
-      else if(gameMode == GAME_OVER){
-        // gameover mode
+      else if(gameMode == GAME_OVER || gameMode == WIN){
+        // start over the game
         if(!wait){
           if ( btnData != 0){
             gameMode = IN_GAME;
             score = 0;
             setupScreen();
             wait = 1;
+            menuCounter = 0;
           }
         }
       }
@@ -129,7 +115,7 @@ void labwork( void )
         moveRect(2, -2, 1);
         moveRect(3, 1, 0);
         moveRect(4, 1, -3);
-        moveRect(5, 4, 1);
+        //moveRect(5, 4, 1);
         
         markAgario();
 
@@ -138,50 +124,62 @@ void labwork( void )
       }
       else if(gameMode == GAME_OVER){
         wait = 1;
-        clearScreen();
-        display_string(0, "    Game Over");
-        display_string(1, "");
-        display_update();
-        delay(2000);
-        display_string(1, "     Score:");
-        display_update();
-        delay(1000);
-        //show score
-        if(score<10)
-          showDigit(score, 64, 18);
-        else{
-          showDigit(score%10, 65, 18);
-          showDigit(score/10, 63, 18);
+        if(menuCounter< 2){
+          clearScreen();
+          display_string(0, "    Game Over");
+          display_string(1, "");
+          display_update();
+          delay(2000);
+          display_string(1, "      Score:");
+          display_update();
+          delay(1000);
+          //show score
+          if(score<10)
+            showDigit(score, 64, 18);
+          else{
+            showDigit(score%10, 65, 18);
+            showDigit(score/10, 63, 18);
+          }
+          display_image(0, screen);
+          delay(1200);
         }
-        
-        display_image(0, screen);
-        delay(1200);
-        display_string(0, "Press any button");
-        display_string(1, "  to play again");
-        display_update();
-        wait = 0;
-        delay(1500);
-        display_string(0, "");
-        display_string(1, "");
-        display_update();
-        delay(1000);
-        display_string(0, "Press any button");
-        display_string(1, "  to play again.");
-        display_update();
-        delay(1000);
-        display_string(0, "");
-        display_string(1, "");
-        display_update();
-        delay(1000);
-        display_string(0, "Press any button");
-        display_string(1, "  to play again.");
-        display_update();
-        delay(1500);
+        else{
+          display_string(0, "Press any button");
+          display_string(1, "  to play again");
+          display_update();
+          wait = 0;
+        }
+        menuCounter++;
       }
-
-      ////////////////////////////////////////
-
-
+      else if(gameMode == WIN){
+         wait = 1;
+        if(menuCounter< 2){
+          clearScreen();
+          display_string(0, " U R DA WINNER!");
+          display_string(1, "");
+          display_update();
+          delay(2000);
+          display_string(1, "      Score:");
+          display_update();
+          delay(1000);
+          //show score
+          if(score<10)
+            showDigit(score, 64, 18);
+          else{
+            showDigit(score%10, 65, 18);
+            showDigit(score/10, 63, 18);
+          }
+          display_image(0, screen);
+          delay(1200);
+        }
+        else{
+          display_string(0, "Press any button");
+          display_string(1, "  to play again");
+          display_update();
+          wait = 0;
+        }
+        menuCounter++;
+      }
       timeoutcount2 = 0;
 
     }
