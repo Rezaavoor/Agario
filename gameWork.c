@@ -1,12 +1,9 @@
-/* mipslabwork.c
+/* gameWork.c
 
    This file written 2015 by F Lundevall
    Updated 2017-04-21 by F Lundevall
 
-   This file should be changed by YOU! So you must
-   add comment(s) here with your name(s) and date(s):
-
-   This file modified 2017-04-31 by Ture Teknolog 
+   Changed by Reza Hosseini and Mahdi Nazari during February 2022
 
    For copyright and licensing, see file COPYING */
 
@@ -14,12 +11,11 @@
 #include <pic32mx.h>  /* Declarations of system-specific addresses etc */
 #include "mipslab.h"  /* Declatations for these labs */
 
-int timeoutcount2 = 0;
-int timeoutcount3 = 0;
-volatile int* portE = (volatile int*) 0xbf886110; //  =PORTE
-int counter = 0x00;
-int wait = 1;
-int menuCounter = 0;
+int timeoutcount2 = 0; // counter for Timer2
+int timeoutcount3 = 0; // counter for Timer3
+int counter = 0x00;    // counter that is shown by LEDs
+int wait = 1;          // disables buttons when 1 (works like semaphore )
+int menuCounter = 0;   // acts as sort of a delay
 
 /* Lab-specific initialization goes here */
 
@@ -56,8 +52,8 @@ void labinit( void )
 
 void labwork( void )
 {
-  if((IFS(0)>>12) & 1){
-    IFS(0) &= 0xffffefff;
+  if((IFS(0)>>12) & 1){ // if bit 12 == 1 means Timer3 is timedout
+    IFS(0) &= 0xffffefff;   // reset the bit 12
     timeoutcount3++;
     if(timeoutcount3==5){
       int btnData = getbtns();
@@ -79,7 +75,7 @@ void labwork( void )
       }
       else if(gameMode == GAME_OVER || gameMode == WIN){
         // start over the game
-        if(!wait){
+        if(!wait){ // not wait = buttons are enabled and you can change game mode
           if ( btnData != 0){
             gameMode = IN_GAME;
             score = 0;
@@ -101,7 +97,7 @@ void labwork( void )
     timeoutcount2++;
     if(timeoutcount2==8){
       //LEDs shining
-      *portE = counter;
+      PORTE = counter;
       counter += 0x1; // +1   
     
       if(gameMode == START){
@@ -110,6 +106,7 @@ void labwork( void )
       else if(gameMode == IN_GAME){
         checkHit();
 
+        // the default directions are like below, but new rectangles will have random directions
         moveRect(0, 1, 1);
         moveRect(1, 4, 2);
         moveRect(2, -2, 1);

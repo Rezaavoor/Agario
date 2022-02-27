@@ -5,18 +5,21 @@
 //#include "time.h"
 
 
-float rectangles[30][3];
-int rectanglesIndex = 0;
-float agario[3];
+float rectangles[30][3];  // 30 empty spots each storing information for one rectangle(x,y,s)
+int rectanglesIndex = 0;  // number of rectangles in the screen
+float agario[3];  // information of Agario(x,y,s)
 int score = 0;
 
-int START = 0, IN_GAME = 1, GAME_OVER = 2, WIN = 3;
+int START = 0, IN_GAME = 1, GAME_OVER = 2, WIN = 3; // states of the game
 int gameMode = 0; // START
 
+// random generator based on clock of Timer2, Timer3, number of rectangles and Agarioä's position
 int randomGen(int min, int max){
   int randomNumber = (TMR3 / TMR2) * rectanglesIndex + agario[0] - agario[1];
   return (randomNumber % (max - min + 1)) + min;
 }
+
+// clears screen
 void clearScreen(){
   display_string(0, "");
   display_string(1, "");
@@ -30,6 +33,7 @@ void clearScreen(){
   }
 }
 
+// sets up screen by cleaning and creating rectangles + Agario
 void setupScreen(){
   clearScreen();
   createAgario();  
@@ -43,6 +47,7 @@ void setupScreen(){
 
 }
 
+// start mode
 void start(){
   clearScreen();
   display_string(1, "   Agario!!!!");
@@ -66,6 +71,7 @@ void start(){
 
 }
 
+// creates Agario
 void createAgario(){
   int i;
   int x = 64, y = 16, s = 5;
@@ -86,7 +92,7 @@ void createAgario(){
     markPixel(x+i, y+s);
 }
 
-
+// add a new rectangle
 void markRect(int x, int y, int s){
   int i,j;
   for(i=x; i < x+s; i++){
@@ -99,6 +105,8 @@ void markRect(int x, int y, int s){
   rectangles[rectanglesIndex][2] = s;
   rectanglesIndex++;
 }
+
+// updates an existing rectangle
 void updateRect(int index, int x, int y, int s){
   int i,j;
   for(i=x; i < x+s; i++){
@@ -111,6 +119,7 @@ void updateRect(int index, int x, int y, int s){
   rectangles[index][2] = s;
 }
 
+// removes a rectangle from screen only
 void unmarkRect(int index){
 
   int x = rectangles[index][0];
@@ -124,6 +133,7 @@ void unmarkRect(int index){
   }
 }
 
+//  moves a rectangle to a new position by xOffset and yOffset
 void moveRect(int rectIndex, int xOffset, int yOffset){
   unmarkRect(rectIndex);
   int x = rectangles[rectIndex][0];
@@ -144,6 +154,7 @@ void moveRect(int rectIndex, int xOffset, int yOffset){
   updateRect(rectIndex, newX, newY, s);
 }
 
+// appears Agario on screen
 void markAgario(){
   int i;
   int x = agario[0];
@@ -163,6 +174,7 @@ void markAgario(){
     markPixel(x+i, y+s);
 }
 
+// removes Agario from screen only
 void unmarkAgario(){
   int i;
   int x = agario[0];
@@ -182,6 +194,7 @@ void unmarkAgario(){
     unmarkPixel(x+i, y+s);
 }
 
+// moves Agario to a new position
 void moveAgario(int xOffset, int yOffset){
   unmarkAgario();
   int newX = agario[0] + xOffset;
@@ -198,6 +211,8 @@ void moveAgario(int xOffset, int yOffset){
 
   markAgario();
 }
+
+// clears scoreboard located at top-left
 void clearScoreboard(){
   int i,j;
   for(i=0; i<29; i++){
@@ -207,8 +222,7 @@ void clearScoreboard(){
   }
 }
 
-
-
+// marks a specific pixel
 void markPixel (int x, int y){
 	if(y<0 | x<0){
 		x= -1;
@@ -256,6 +270,8 @@ void markPixel (int x, int y){
         }
     }
 }
+
+// removes a specific pixel
 void unmarkPixel (int x, int y){
 	if(y<0 | x<0){
 		x= -1;
@@ -304,6 +320,7 @@ void unmarkPixel (int x, int y){
     }
 }
 
+// shows the string "score:" on top-left cornenr of the display
 void showScoreString(){
   //S
   markPixel(0,0);
@@ -374,6 +391,8 @@ void showScoreString(){
   markPixel(20,1);
   markPixel(20,3);
 }
+
+// shows the value of score in a desired position(x,y)
 void showDigit(int score, int x, int y){
   switch (score)
   {
@@ -508,6 +527,7 @@ void showDigit(int score, int x, int y){
   }
 }
 
+// updates the scoreboard with new score
 void showScore(int score){
   clearScoreboard();
   showScoreString();
@@ -518,6 +538,8 @@ void showScore(int score){
     showDigit(score/10, 23, 0);
   }
 }
+
+// is called when a rectangle meets Agario. "eat" if Agario>Recatngle otherwise "be fed" = lose
 void eatOrBeFed(int index){
   int recS = rectangles[index][2];
   float agarS = agario[2];
@@ -535,9 +557,9 @@ void eatOrBeFed(int index){
     rectangles[index][1] += randomGen(0, (32-(rectangles[index][1]) ) );
 
     agario[2] += (recS + 1.0)/agarS; // growth depends on rectangles size
-    score++;
+    score++; // +1 on score for each meal!
     
-    //check win possibility
+    //check win possibility based on Agario's size
     if(agario[2] >= 10){
       gameMode = WIN;
     }
@@ -550,6 +572,7 @@ void eatOrBeFed(int index){
   }
 }
 
+// check if it is a hit
 void checkHit(){
   int x1 = agario[0],
       x2 = agario[0]+ agario[2], 
