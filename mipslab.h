@@ -37,15 +37,9 @@ void display_debug( volatile int * const addr );
 
 /* Declare bitmap array containing font */
 extern const uint8_t const font[128*8];
-/* Declare bitmap array containing icon */
-extern const uint8_t const icon[128];
 /* Declare text buffer for display output */
 extern char textbuffer[4][16];
 
-/* Declare functions written by students.
-   Note: Since we declare these functions here,
-   students must define their functions with the exact types
-   specified in the laboratory instructions. */
 /* Written as part of asm lab: delay, time2string */
 void delay(int);
 void time2string( char *, int );
