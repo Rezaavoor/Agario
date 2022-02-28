@@ -225,10 +225,11 @@ void clearScoreboard(){
 // marks a specific pixel
 void markPixel (int x, int y){
   // invalid x,y are ignored
-	if(y<0 | x<0 | x>127 | y>31)
-		return;
-	
-
+	if(y<0 | x<0 | x>127 | y>32)
+  {
+    return;
+  }
+  
   // check which page and which bit we are changing
   //if(y>=0 && y<8){  // page 0
     // no action required
@@ -237,6 +238,7 @@ void markPixel (int x, int y){
     y=y-8;  // y shows which bit should be changed: ex: y=4 means 11111111 => 11101111
     x = x +128; // x shows which index in the array should be changed: ex: x=128 means screen[128] should be changed
   }
+
   if(y>= 16 && y<24){ // page 2
     y=y-16;
     x = x +256;
@@ -244,6 +246,11 @@ void markPixel (int x, int y){
   if(y>= 24 && y<32){ // page 3
     y=y-24;
     x = x +384;
+  }
+  
+  if(y==0){
+      int write = ~1;
+      screen[x] = screen[x] & write;
   }
   else {
     int k = 1;  // default = 11111111
