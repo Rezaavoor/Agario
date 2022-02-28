@@ -224,51 +224,39 @@ void clearScoreboard(){
 
 // marks a specific pixel
 void markPixel (int x, int y){
-	if(y<0 | x<0){
-		x= -1;
-		y=-1;
-	}
-	if(x>127 | y > 32){
-		x= -1;
-		y=-1;
-	}
-    if(y>= 8 && y<16){
-        y=y-8;
-        x = x +128;
-        if(x<129 | x>257){
-            x= -1;
-        }
-    }
-    if(y>= 16 && y<24){
-        y=y-16;
-        x = x +256;
-        if(x<257 | x>384){
-            x= -1;
-        }
-    }
-    if(y>= 24 && y<32){
-        y=y-24;
-        x = x +384;
-        if(x<384 | x>512){
-            x= -1;
-        }
-    }
-    if(y==0){
-        int write = ~1;
-        screen[x] = screen[x] & write;
-    }
-    else {
-        int k = 1;
-        int l;
+  // invalid x,y are ignored
+	if(y<0 | x<0 | x>127 | y>31)
+		return;
+	
 
-        for(l=1; l<8; l++){
-            k *= 2;
-            if(y==l){
-                    int write = ~k;
-                    screen[x] = screen[x] & write;
-            }
-        }
+  // check which page and which bit we are changing
+  //if(y>=0 && y<8){  // page 0
+    // no action required
+  //}
+  if(y>= 8 && y<16){  // page 1
+    y=y-8;  // y shows which bit should be changed: ex: y=4 means 11111111 => 11101111
+    x = x +128; // x shows which index in the array should be changed: ex: x=128 means screen[128] should be changed
+  }
+  if(y>= 16 && y<24){ // page 2
+    y=y-16;
+    x = x +256;
+  }
+  if(y>= 24 && y<32){ // page 3
+    y=y-24;
+    x = x +384;
+  }
+  else {
+    int k = 1;  // default = 11111111
+    
+    int l;
+    for(l=1; l<8; l++){ // go through every bit between 0,8 to change the bit y is pointing at
+      k *= 2; // point at next bit on every iteration
+      if(y==l){ // the y is found
+              int write = ~k; // reverse the value because 0 on screen means the pixel is turned on
+              screen[x] = screen[x] & write;  // change the bit y is pointing at on index x is pointing at
+      }
     }
+  }
 }
 
 // removes a specific pixel
