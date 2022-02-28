@@ -208,7 +208,7 @@ void clearScoreboard(){
 }
 
 
-
+// we have to refer to the author of the code 
 void markPixel (int x, int y){
 	if(y<0 | x<0){
 		x= -1;
