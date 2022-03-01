@@ -13,6 +13,8 @@ int score = 0;
 int START = 0, IN_GAME = 1, GAME_OVER = 2, WIN = 3; // states of the game
 int gameMode = 0; // START
 
+int MARK = 1, UNMARK = 0; 
+
 // random generator based on clock of Timer2, Timer3, number of rectangles and Agarioä's position
 int randomGen(int min, int max){
   int randomNumber = (TMR3 / TMR2) * rectanglesIndex + agario[0] - agario[1];
@@ -71,6 +73,31 @@ void start(){
 
 }
 
+
+void setPixel(int x, int y, int mark){
+  // invalid x,y are ignored
+	if(y<0 | x<0 | x>127 | y>32)
+  {
+    return;
+  }
+
+  int index = x + ((y/8)*128);  // +128 per page
+  int rowInPage = y%8;
+  
+  int i, newEightBit=0b00000001;
+  for(i=0; i<rowInPage; i++){
+    newEightBit << 1;
+  }
+
+  if(mark){
+    newEightBit = ~newEightBit;
+    screen[index] = screen[index] & newEightBit;
+  }
+  else{
+    screen[index] = screen[index] | newEightBit;
+  }
+}
+
 // creates Agario
 void createAgario(){
   int i;
@@ -80,16 +107,16 @@ void createAgario(){
   agario[2] = s;
 
   for(i=0; i<s; i++)
-    markPixel(x+i, y);
+    setPixel(x+i, y, MARK);
 
   for(i=0; i<s; i++)
-    markPixel(x, y+i);
+    setPixel(x, y+i, MARK);
 
   for(i=0; i<s; i++)
-    markPixel(x+s, y+i);
+    setPixel(x+s, y+i, MARK);
 
   for(i=0; i<=s; i++)
-    markPixel(x+i, y+s);
+    setPixel(x+i, y+s, MARK);
 }
 
 // add a new rectangle
@@ -97,7 +124,7 @@ void markRect(int x, int y, int s){
   int i,j;
   for(i=x; i < x+s; i++){
     for(j=y; j < y+s; j++){
-      markPixel(i,j);
+      setPixel(i,j,MARK);
     }
   }
   rectangles[rectanglesIndex][0] = x;
@@ -111,7 +138,7 @@ void updateRect(int index, int x, int y, int s){
   int i,j;
   for(i=x; i < x+s; i++){
     for(j=y; j < y+s; j++){
-      markPixel(i,j);
+      setPixel(i,j,MARK);
     }
   }
   rectangles[index][0] = x;
@@ -128,7 +155,7 @@ void unmarkRect(int index){
   int i,j;
   for(i=x; i < x+s; i++){
     for(j=y; j < y+s; j++){
-      unmarkPixel(i,j);
+      setPixel(i,j, UNMARK);
     }
   }
 }
@@ -155,48 +182,28 @@ void moveRect(int rectIndex, int xOffset, int yOffset){
 }
 
 // appears Agario on screen
-void markAgario(){
+void markAgario(int mark){
   int i;
   int x = agario[0];
   int y = agario[1];
   int s = agario[2];
   
   for(i=0; i<s; i++)
-    setpixel(x+i, y, 1);
+    setPixel(x+i, y, mark);
 
   for(i=0; i<s; i++)
-    setpixel(x, y+i, 1);
+    setPixel(x, y+i, mark);
 
   for(i=0; i<s; i++)
-    setpixel(x+s, y+i, 1);
+    setPixel(x+s, y+i, mark);
 
   for(i=0; i<=s; i++)
-    setpixel(x+i, y+s, 1);
-}
-
-// removes Agario from screen only
-void unmarkAgario(){
-  int i;
-  int x = agario[0];
-  int y = agario[1];
-  int s = agario[2];
-
-  for(i=0; i<s; i++)
-    unmarkPixel(x+i, y);
-
-  for(i=0; i<s; i++)
-    unmarkPixel(x, y+i);
-
-  for(i=0; i<s; i++)
-    unmarkPixel(x+s, y+i);
-
-  for(i=0; i<=s; i++)
-    unmarkPixel(x+i, y+s);
+    setPixel(x+i, y+s, mark);
 }
 
 // moves Agario to a new position
 void moveAgario(int xOffset, int yOffset){
-  unmarkAgario();
+  markAgario(UNMARK);
   int newX = agario[0] + xOffset;
   int newY = agario[1] + yOffset;
   int s = agario[2];
@@ -209,7 +216,7 @@ void moveAgario(int xOffset, int yOffset){
   agario[0] = newX;
   agario[1] = newY;
 
-  markAgario();
+  markAgario(MARK);
 }
 
 // clears scoreboard located at top-left
@@ -217,198 +224,81 @@ void clearScoreboard(){
   int i,j;
   for(i=0; i<29; i++){
     for(j=0; j<5; j++){
-      unmarkPixel(i,j);
+      setPixel(i,j, UNMARK);
     }
   }
-}
-
-// marks a specific pixel
-void markPixel (int x, int y){
-  // invalid x,y are ignored
-	if(y<0 | x<0 | x>127 | y>32)
-  {
-    return;
-  }
-  
-  // check which page and which bit we are changing
-  //if(y>=0 && y<8){  // page 0
-    // no action required
-  //}
-  if(y>= 8 && y<16){  // page 1
-    y=y-8;  // y shows which bit should be changed: ex: y=4 means 11111111 => 11101111
-    x = x +128; // x shows which index in the array should be changed: ex: x=128 means screen[128] should be changed
-  }
-
-  if(y>= 16 && y<24){ // page 2
-    y=y-16;
-    x = x +256;
-  }
-  if(y>= 24 && y<32){ // page 3
-    y=y-24;
-    x = x +384;
-  }
-  
-  if(y==0){
-      int write = ~1;
-      screen[x] = screen[x] & write;
-  }
-  else {
-    int k = 1;  // default = 11111111
-    
-    int l;
-    for(l=1; l<8; l++){ // go through every bit between 0,8 to change the bit y is pointing at
-      k *= 2; // point at next bit on every iteration
-      if(y==l){ // the y is found
-              int write = ~k; // reverse the value because 0 on screen means the pixel is turned on
-              screen[x] = screen[x] & write;  // change the bit y is pointing at on index x is pointing at
-      }
-    }
-  }
-}
-
-void setPixel(int x, int y, int turnOn){
-  // invalid x,y are ignored
-	if(y<0 | x<0 | x>127 | y>32)
-  {
-    return;
-  }
-
-  int index = x + ((y/8)*128);  // +128 per page
-  int rowInPage = y%8;
-  
-  int i, newEightBit=0b00000001;
-  for(i=0; i<rowInPage; i++){
-    newEightBit << 1;
-  }
-
-  if(turnOn){
-    newEightBit = ~newEightBit;
-    screen[index] = screen[index] & newEightBit;
-  }
-  else{
-    screen[index] = screen[index] | newEightBit;
-  }
-}
-
-// removes a specific pixel
-void unmarkPixel (int x, int y){
-	if(y<0 | x<0){
-		x= -1;
-		y=-1;
-	}
-	if(x>127 | y > 32){
-		x= -1;
-		y=-1;
-	}
-    if(y>= 8 && y<16){
-        y=y-8;
-        x = x +128;
-        if(x<129 | x>257){
-            x= -1;
-        }
-    }
-    if(y>= 16 && y<24){
-        y=y-16;
-        x = x +256;
-        if(x<257 | x>384){
-            x= -1;
-        }
-    }
-    if(y>= 24 && y<32){
-        y=y-24;
-        x = x +384;
-        if(x<384 | x>512){
-            x= -1;
-        }
-    }
-    if(y==0){
-        int write = 1; //11111110 
-        screen[x] = screen[x] | write;
-    }
-    else {
-        int k = 1;
-        int l;
-
-        for(l=1; l<8; l++){
-            k *= 2;
-            if(y==l){
-                    int write = k;
-                    screen[x] = screen[x] | write;
-            }
-        }
-    }
 }
 
 // shows the string "score:" on top-left cornenr of the display
 void showScoreString(){
   //S
-  markPixel(0,0);
-  markPixel(1,0);
-  markPixel(2,0);
-  markPixel(0,1);
-  markPixel(0,2);
-  markPixel(1,2);
-  markPixel(2,2);
-  markPixel(2,3);
-  markPixel(0,4);
-  markPixel(1,4);
-  markPixel(2,4);
+  setPixel(0,0,MARK);
+  setPixel(1,0,MARK);
+  setPixel(2,0,MARK);
+  setPixel(0,1,MARK);
+  setPixel(0,2,MARK);
+  setPixel(1,2,MARK);
+  setPixel(2,2,MARK);
+  setPixel(2,3,MARK);
+  setPixel(0,4,MARK);
+  setPixel(1,4,MARK);
+  setPixel(2,4,MARK);
 
   //C
-  markPixel(4,0);
-  markPixel(5,0);
-  markPixel(6,0);
-  markPixel(4,1);
-  markPixel(4,2);
-  markPixel(4,3);
-  markPixel(4,4);
-  markPixel(5,4);
-  markPixel(6,4);
+  setPixel(4,0,MARK);
+  setPixel(5,0,MARK);
+  setPixel(6,0,MARK);
+  setPixel(4,1,MARK);
+  setPixel(4,2,MARK);
+  setPixel(4,3,MARK);
+  setPixel(4,4,MARK);
+  setPixel(5,4,MARK);
+  setPixel(6,4,MARK);
 
   //O
-  markPixel(8,0);
-  markPixel(9,0);
-  markPixel(10,0);
-  markPixel(8,1);
-  markPixel(10,1);
-  markPixel(8,2);
-  markPixel(10,2);
-  markPixel(8,3);
-  markPixel(10,3);
-  markPixel(8,4);
-  markPixel(9,4);
-  markPixel(10,4);
+  setPixel(8,0,MARK);
+  setPixel(9,0,MARK);
+  setPixel(10,0,MARK);
+  setPixel(8,1,MARK);
+  setPixel(10,1,MARK);
+  setPixel(8,2,MARK);
+  setPixel(10,2,MARK);
+  setPixel(8,3,MARK);
+  setPixel(10,3,MARK);
+  setPixel(8,4,MARK);
+  setPixel(9,4,MARK);
+  setPixel(10,4,MARK);
 
   //R
-  markPixel(12,0);
-  markPixel(13,0);
-  markPixel(14,0);
-  markPixel(12,1);
-  markPixel(14,1);
-  markPixel(12,2);
-  markPixel(13,2);
-  markPixel(14,2);
-  markPixel(12,3);
-  markPixel(13,3);
-  markPixel(12,4);
-  markPixel(14,4);
+  setPixel(12,0,MARK);
+  setPixel(13,0,MARK);
+  setPixel(14,0,MARK);
+  setPixel(12,1,MARK);
+  setPixel(14,1,MARK);
+  setPixel(12,2,MARK);
+  setPixel(13,2,MARK);
+  setPixel(14,2,MARK);
+  setPixel(12,3,MARK);
+  setPixel(13,3,MARK);
+  setPixel(12,4,MARK);
+  setPixel(14,4,MARK);
   
   //E
-  markPixel(16,0);
-  markPixel(17,0);
-  markPixel(18,0);
-  markPixel(16,1);
-  markPixel(16,2);
-  markPixel(17,2);
-  markPixel(18,2);
-  markPixel(16,3);
-  markPixel(16,4);
-  markPixel(17,4);
-  markPixel(18,4);
+  setPixel(16,0,MARK);
+  setPixel(17,0,MARK);
+  setPixel(18,0,MARK);
+  setPixel(16,1,MARK);
+  setPixel(16,2,MARK);
+  setPixel(17,2,MARK);
+  setPixel(18,2,MARK);
+  setPixel(16,3,MARK);
+  setPixel(16,4,MARK);
+  setPixel(17,4,MARK);
+  setPixel(18,4,MARK);
 
   //:
-  markPixel(20,1);
-  markPixel(20,3);
+  setPixel(20,1,MARK);
+  setPixel(20,3,MARK);
 }
 
 // shows the value of score in a desired position(x,y)
@@ -416,132 +306,132 @@ void showDigit(int score, int x, int y){
   switch (score)
   {
   case 0:
-    markPixel(0 + x,0 + y);
-    markPixel(1 + x,0 + y);
-    markPixel(2 + x,0 + y);
-    markPixel(0 + x,1 + y);
-    markPixel(2 + x,1 + y);
-    markPixel(0 + x,2 + y);
-    markPixel(0 + x,3 + y);
-    markPixel(0 + x,4 + y);
-    markPixel(1 + x,4 + y);
-    markPixel(2 + x,4 + y);
-    markPixel(2 + x,3 + y);
-    markPixel(2 + x,2 + y);
+    setPixel(0 + x,0 + y, MARK);
+    setPixel(1 + x,0 + y, MARK);
+    setPixel(2 + x,0 + y, MARK);
+    setPixel(0 + x,1 + y, MARK);
+    setPixel(2 + x,1 + y, MARK);
+    setPixel(0 + x,2 + y, MARK);
+    setPixel(0 + x,3 + y, MARK);
+    setPixel(0 + x,4 + y, MARK);
+    setPixel(1 + x,4 + y, MARK);
+    setPixel(2 + x,4 + y, MARK);
+    setPixel(2 + x,3 + y, MARK);
+    setPixel(2 + x,2 + y, MARK);
     break;
   case 1:
-    markPixel(1 + x,0 + y);
-    markPixel(1 + x,1 + y);
-    markPixel(1 + x,2 + y);
-    markPixel(1 + x,3 + y);
-    markPixel(1 + x,4 + y);
+    setPixel(1 + x,0 + y, MARK);
+    setPixel(1 + x,1 + y, MARK);
+    setPixel(1 + x,2 + y, MARK);
+    setPixel(1 + x,3 + y, MARK);
+    setPixel(1 + x,4 + y, MARK);
     break;
   case 2:
-    markPixel(0 + x,0 + y);
-    markPixel(1 + x,0 + y);
-    markPixel(2 + x,0 + y);
-    markPixel(2 + x,1 + y);
-    markPixel(2 + x,2 + y);
-    markPixel(1 + x,2 + y);
-    markPixel(0 + x,2 + y);
-    markPixel(0 + x,3 + y);
-    markPixel(0 + x,4 + y);
-    markPixel(1 + x,4 + y);
-    markPixel(2 + x,4 + y);
+    setPixel(0 + x,0 + y, MARK);
+    setPixel(1 + x,0 + y, MARK);
+    setPixel(2 + x,0 + y, MARK);
+    setPixel(2 + x,1 + y, MARK);
+    setPixel(2 + x,2 + y, MARK);
+    setPixel(1 + x,2 + y, MARK);
+    setPixel(0 + x,2 + y, MARK);
+    setPixel(0 + x,3 + y, MARK);
+    setPixel(0 + x,4 + y, MARK);
+    setPixel(1 + x,4 + y, MARK);
+    setPixel(2 + x,4 + y, MARK);
     break;
   case 3:
-    markPixel(0 + x,0 + y);
-    markPixel(1 + x,0 + y);
-    markPixel(2 + x,0 + y);
-    markPixel(2 + x,1 + y);
-    markPixel(2 + x,2 + y);
-    markPixel(1 + x,2 + y);
-    markPixel(0 + x,2 + y);
-    markPixel(2 + x,3 + y);
-    markPixel(2 + x,4 + y);
-    markPixel(1 + x,4 + y);
-    markPixel(0 + x,4 + y);
+    setPixel(0 + x,0 + y, MARK);
+    setPixel(1 + x,0 + y, MARK);
+    setPixel(2 + x,0 + y, MARK);
+    setPixel(2 + x,1 + y, MARK);
+    setPixel(2 + x,2 + y, MARK);
+    setPixel(1 + x,2 + y, MARK);
+    setPixel(0 + x,2 + y, MARK);
+    setPixel(2 + x,3 + y, MARK);
+    setPixel(2 + x,4 + y, MARK);
+    setPixel(1 + x,4 + y, MARK);
+    setPixel(0 + x,4 + y, MARK);
     break;
   case 4:
-    markPixel(0 + x,0 + y);
-    markPixel(0 + x,1 + y);
-    markPixel(0 + x,2 + y);
-    markPixel(1 + x,2 + y);
-    markPixel(2 + x,2 + y);
-    markPixel(2 + x,1 + y);
-    markPixel(2 + x,0 + y);
-    markPixel(2 + x,3 + y);
-    markPixel(2 + x,4 + y);
+    setPixel(0 + x,0 + y, MARK);
+    setPixel(0 + x,1 + y, MARK);
+    setPixel(0 + x,2 + y, MARK);
+    setPixel(1 + x,2 + y, MARK);
+    setPixel(2 + x,2 + y, MARK);
+    setPixel(2 + x,1 + y, MARK);
+    setPixel(2 + x,0 + y, MARK);
+    setPixel(2 + x,3 + y, MARK);
+    setPixel(2 + x,4 + y, MARK);
     break;
   case 5:
-    markPixel(0 + x,0 + y);
-    markPixel(1 + x,0 + y);
-    markPixel(2 + x,0 + y);
-    markPixel(0 + x,1 + y);
-    markPixel(0 + x,2 + y);
-    markPixel(1 + x,2 + y);
-    markPixel(2 + x,2 + y);
-    markPixel(2 + x,3 + y);
-    markPixel(0 + x,4 + y);
-    markPixel(1 + x,4 + y);
-    markPixel(2 + x,4 + y);
+    setPixel(0 + x,0 + y, MARK);
+    setPixel(1 + x,0 + y, MARK);
+    setPixel(2 + x,0 + y, MARK);
+    setPixel(0 + x,1 + y, MARK);
+    setPixel(0 + x,2 + y, MARK);
+    setPixel(1 + x,2 + y, MARK);
+    setPixel(2 + x,2 + y, MARK);
+    setPixel(2 + x,3 + y, MARK);
+    setPixel(0 + x,4 + y, MARK);
+    setPixel(1 + x,4 + y, MARK);
+    setPixel(2 + x,4 + y, MARK);
     break;
   case 6:
-    markPixel(0 + x,0 + y);
-    markPixel(1 + x,0 + y);
-    markPixel(2 + x,0 + y);
-    markPixel(0 + x,1 + y);
-    markPixel(0 + x,2 + y);
-    markPixel(1 + x,2 + y);
-    markPixel(2 + x,2 + y);
-    markPixel(2 + x,3 + y);
-    markPixel(0 + x,3 + y);
-    markPixel(0 + x,4 + y);
-    markPixel(1 + x,4 + y);
-    markPixel(2 + x,4 + y);
+    setPixel(0 + x,0 + y, MARK);
+    setPixel(1 + x,0 + y, MARK);
+    setPixel(2 + x,0 + y, MARK);
+    setPixel(0 + x,1 + y, MARK);
+    setPixel(0 + x,2 + y, MARK);
+    setPixel(1 + x,2 + y, MARK);
+    setPixel(2 + x,2 + y, MARK);
+    setPixel(2 + x,3 + y, MARK);
+    setPixel(0 + x,3 + y, MARK);
+    setPixel(0 + x,4 + y, MARK);
+    setPixel(1 + x,4 + y, MARK);
+    setPixel(2 + x,4 + y, MARK);
     
     break;
   case 7:
-    markPixel(0 + x,0 + y);
-    markPixel(1 + x,0 + y);
-    markPixel(2 + x,0 + y);
-    markPixel(2 + x,1 + y);
-    markPixel(2 + x,2 + y);
-    markPixel(2 + x,3 + y);
-    markPixel(2 + x,4 + y);
+    setPixel(0 + x,0 + y, MARK);
+    setPixel(1 + x,0 + y, MARK);
+    setPixel(2 + x,0 + y, MARK);
+    setPixel(2 + x,1 + y, MARK);
+    setPixel(2 + x,2 + y, MARK);
+    setPixel(2 + x,3 + y, MARK);
+    setPixel(2 + x,4 + y, MARK);
     break;
   case 8:
-    markPixel(0 + x,0 + y);
-    markPixel(1 + x,0 + y);
-    markPixel(2 + x,0 + y);
-    markPixel(0 + x,1 + y);
-    markPixel(2 + x,1 + y);
-    markPixel(0 + x,2 + y);
-    markPixel(1 + x,2 + y);
-    markPixel(0 + x,3 + y);
-    markPixel(0 + x,4 + y);
-    markPixel(1 + x,4 + y);
-    markPixel(2 + x,4 + y);
-    markPixel(2 + x,3 + y);
-    markPixel(2 + x,2 + y);
+    setPixel(0 + x,0 + y, MARK);
+    setPixel(1 + x,0 + y, MARK);
+    setPixel(2 + x,0 + y, MARK);
+    setPixel(0 + x,1 + y, MARK);
+    setPixel(2 + x,1 + y, MARK);
+    setPixel(0 + x,2 + y, MARK);
+    setPixel(1 + x,2 + y, MARK);
+    setPixel(0 + x,3 + y, MARK);
+    setPixel(0 + x,4 + y, MARK);
+    setPixel(1 + x,4 + y, MARK);
+    setPixel(2 + x,4 + y, MARK);
+    setPixel(2 + x,3 + y, MARK);
+    setPixel(2 + x,2 + y, MARK);
     break;
   case 9:
-    markPixel(0 + x,0 + y);
-    markPixel(1 + x,0 + y);
-    markPixel(2 + x,0 + y);
-    markPixel(0 + x,1 + y);
-    markPixel(2 + x,1 + y);
-    markPixel(0 + x,2 + y);
-    markPixel(1 + x,2 + y);
-    markPixel(0 + x,4 + y);
-    markPixel(1 + x,4 + y);
-    markPixel(2 + x,4 + y);
-    markPixel(2 + x,3 + y);
-    markPixel(2 + x,2 + y);
+    setPixel(0 + x,0 + y, MARK);
+    setPixel(1 + x,0 + y, MARK);
+    setPixel(2 + x,0 + y, MARK);
+    setPixel(0 + x,1 + y, MARK);
+    setPixel(2 + x,1 + y, MARK);
+    setPixel(0 + x,2 + y, MARK);
+    setPixel(1 + x,2 + y, MARK);
+    setPixel(0 + x,4 + y, MARK);
+    setPixel(1 + x,4 + y, MARK);
+    setPixel(2 + x,4 + y, MARK);
+    setPixel(2 + x,3 + y, MARK);
+    setPixel(2 + x,2 + y, MARK);
     break;
   
   default:
-    markPixel(0 + x,0 + y);
+    setPixel(0 + x,0 + y, MARK);
     break;
   }
 }
@@ -565,7 +455,7 @@ void eatOrBeFed(int index){
   if(recS < agarS){
     //eat
     unmarkRect(index);
-    unmarkAgario();
+    markAgario(UNMARK);
     if(index == 0 || index == 1){
       rectangles[index][2] = agario[2] + randomGen(0, 5);
     }

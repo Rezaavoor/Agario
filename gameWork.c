@@ -114,7 +114,7 @@ void labwork( void )
         moveRect(4, 1, -3);
         //moveRect(5, 4, 1);
         
-        markAgario();
+        markAgario(MARK);
 
         showScore(score);
         display_image(0, screen);
