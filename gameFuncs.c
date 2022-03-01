@@ -229,7 +229,6 @@ void markPixel (int x, int y){
   {
     return;
   }
-  
   // check which page and which bit we are changing
   //if(y>=0 && y<8){  // page 0
     // no action required
@@ -249,15 +248,15 @@ void markPixel (int x, int y){
   }
   
   if(y==0){
-      int write = ~1;
-      screen[x] = screen[x] & write;
+    int write = ~1; // 11111110
+    screen[x] = screen[x] & write;
   }
   else {
     int k = 1;  // default = 11111111
     
     int l;
     for(l=1; l<8; l++){ // go through every bit between 0,8 to change the bit y is pointing at
-      k *= 2; // point at next bit on every iteration
+      k = k<<1; // point at next bit on every iteration
       if(y==l){ // the y is found
               int write = ~k; // reverse the value because 0 on screen means the pixel is turned on
               screen[x] = screen[x] & write;  // change the bit y is pointing at on index x is pointing at
@@ -292,37 +291,24 @@ void setPixel(int x, int y, int turnOn){
 
 // removes a specific pixel
 void unmarkPixel (int x, int y){
-	if(y<0 | x<0){
-		x= -1;
-		y=-1;
-	}
-	if(x>127 | y > 32){
-		x= -1;
-		y=-1;
-	}
+	if(y<0 | x<0 | x>127 | y>32)
+  {
+    return;
+  }
     if(y>= 8 && y<16){
         y=y-8;
         x = x +128;
-        if(x<129 | x>257){
-            x= -1;
-        }
     }
     if(y>= 16 && y<24){
         y=y-16;
         x = x +256;
-        if(x<257 | x>384){
-            x= -1;
-        }
     }
     if(y>= 24 && y<32){
         y=y-24;
         x = x +384;
-        if(x<384 | x>512){
-            x= -1;
-        }
     }
     if(y==0){
-        int write = 1; //11111110 
+        int write = 1; //00000001 
         screen[x] = screen[x] | write;
     }
     else {
@@ -330,7 +316,7 @@ void unmarkPixel (int x, int y){
         int l;
 
         for(l=1; l<8; l++){
-            k *= 2;
+            k = k<<1;
             if(y==l){
                     int write = k;
                     screen[x] = screen[x] | write;
