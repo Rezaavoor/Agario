@@ -277,7 +277,7 @@ void setPixel(int x, int y, int turnOn){
   
   int i, newEightBit=0b00000001;
   for(i=0; i<rowInPage; i++){
-    newEightBit << 1;
+    newEightBit = newEightBit << 1;
   }
 
   if(turnOn){
