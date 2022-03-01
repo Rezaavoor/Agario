@@ -162,16 +162,16 @@ void markAgario(){
   int s = agario[2];
   
   for(i=0; i<s; i++)
-    markPixel(x+i, y);
+    setpixel(x+i, y, 1);
 
   for(i=0; i<s; i++)
-    markPixel(x, y+i);
+    setpixel(x, y+i, 1);
 
   for(i=0; i<s; i++)
-    markPixel(x+s, y+i);
+    setpixel(x+s, y+i, 1);
 
   for(i=0; i<=s; i++)
-    markPixel(x+i, y+s);
+    setpixel(x+i, y+s, 1);
 }
 
 // removes Agario from screen only
@@ -263,6 +263,30 @@ void markPixel (int x, int y){
               screen[x] = screen[x] & write;  // change the bit y is pointing at on index x is pointing at
       }
     }
+  }
+}
+
+void setPixel(int x, int y, int turnOn){
+  // invalid x,y are ignored
+	if(y<0 | x<0 | x>127 | y>32)
+  {
+    return;
+  }
+
+  int index = x + ((y/8)*128);  // +128 per page
+  int rowInPage = y%8;
+  
+  int i, newEightBit=0b00000001;
+  for(i=0; i<rowInPage; i++){
+    newEightBit << 1;
+  }
+
+  if(turnOn){
+    newEightBit = ~newEightBit;
+    screen[index] = screen[index] & newEightBit;
+  }
+  else{
+    screen[index] = screen[index] | newEightBit;
   }
 }
 
