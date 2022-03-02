@@ -2,8 +2,6 @@
 #include <stdlib.h>
 #include <pic32mx.h> /* Declarations of system-specific addresses etc */
 #include "mipslab.h" /* Declatations for these labs */
-//#include "time.h"
-
 
 float rectangles[30][3];  // 30 empty spots each storing information for one rectangle(x,y,s)
 int rectanglesIndex = 0;  // number of rectangles in the screen
@@ -73,10 +71,9 @@ void start(){
 
 }
 
-
 void setPixel(int x, int y, int mark){
   // invalid x,y are ignored
-	if(y<0 | x<0 | x>127 | y>32)
+	if(y<0 || x<0 || x>127 || y>31) 
   {
     return;
   }
@@ -86,7 +83,7 @@ void setPixel(int x, int y, int mark){
   
   int i, newEightBit=0b00000001;
   for(i=0; i<rowInPage; i++){
-    newEightBit << 1;
+    newEightBit = newEightBit << 1;
   }
 
   if(mark){
@@ -124,7 +121,7 @@ void markRect(int x, int y, int s){
   int i,j;
   for(i=x; i < x+s; i++){
     for(j=y; j < y+s; j++){
-      setPixel(i,j,MARK);
+      setPixel(i,j, MARK);
     }
   }
   rectangles[rectanglesIndex][0] = x;
@@ -138,7 +135,7 @@ void updateRect(int index, int x, int y, int s){
   int i,j;
   for(i=x; i < x+s; i++){
     for(j=y; j < y+s; j++){
-      setPixel(i,j,MARK);
+      setPixel(i,j, MARK);
     }
   }
   rectangles[index][0] = x;
@@ -232,73 +229,73 @@ void clearScoreboard(){
 // shows the string "score:" on top-left cornenr of the display
 void showScoreString(){
   //S
-  setPixel(0,0,MARK);
-  setPixel(1,0,MARK);
-  setPixel(2,0,MARK);
-  setPixel(0,1,MARK);
-  setPixel(0,2,MARK);
-  setPixel(1,2,MARK);
-  setPixel(2,2,MARK);
-  setPixel(2,3,MARK);
-  setPixel(0,4,MARK);
-  setPixel(1,4,MARK);
-  setPixel(2,4,MARK);
+  setPixel(0,0, MARK);
+  setPixel(1,0, MARK);
+  setPixel(2,0, MARK);
+  setPixel(0,1, MARK);
+  setPixel(0,2, MARK);
+  setPixel(1,2, MARK);
+  setPixel(2,2, MARK);
+  setPixel(2,3, MARK);
+  setPixel(0,4, MARK);
+  setPixel(1,4, MARK);
+  setPixel(2,4, MARK);
 
   //C
-  setPixel(4,0,MARK);
-  setPixel(5,0,MARK);
-  setPixel(6,0,MARK);
-  setPixel(4,1,MARK);
-  setPixel(4,2,MARK);
-  setPixel(4,3,MARK);
-  setPixel(4,4,MARK);
-  setPixel(5,4,MARK);
-  setPixel(6,4,MARK);
+  setPixel(4,0, MARK);
+  setPixel(5,0, MARK);
+  setPixel(6,0, MARK);
+  setPixel(4,1, MARK);
+  setPixel(4,2, MARK);
+  setPixel(4,3, MARK);
+  setPixel(4,4, MARK);
+  setPixel(5,4, MARK);
+  setPixel(6,4, MARK);
 
   //O
-  setPixel(8,0,MARK);
-  setPixel(9,0,MARK);
-  setPixel(10,0,MARK);
-  setPixel(8,1,MARK);
-  setPixel(10,1,MARK);
-  setPixel(8,2,MARK);
-  setPixel(10,2,MARK);
-  setPixel(8,3,MARK);
-  setPixel(10,3,MARK);
-  setPixel(8,4,MARK);
-  setPixel(9,4,MARK);
-  setPixel(10,4,MARK);
+  setPixel(8,0, MARK);
+  setPixel(9,0, MARK);
+  setPixel(10,0, MARK);
+  setPixel(8,1, MARK);
+  setPixel(10,1, MARK);
+  setPixel(8,2, MARK);
+  setPixel(10,2, MARK);
+  setPixel(8,3, MARK);
+  setPixel(10,3, MARK);
+  setPixel(8,4, MARK);
+  setPixel(9,4, MARK);
+  setPixel(10,4, MARK);
 
   //R
-  setPixel(12,0,MARK);
-  setPixel(13,0,MARK);
-  setPixel(14,0,MARK);
-  setPixel(12,1,MARK);
-  setPixel(14,1,MARK);
-  setPixel(12,2,MARK);
-  setPixel(13,2,MARK);
-  setPixel(14,2,MARK);
-  setPixel(12,3,MARK);
-  setPixel(13,3,MARK);
-  setPixel(12,4,MARK);
-  setPixel(14,4,MARK);
+  setPixel(12,0, MARK);
+  setPixel(13,0, MARK);
+  setPixel(14,0, MARK);
+  setPixel(12,1, MARK);
+  setPixel(14,1, MARK);
+  setPixel(12,2, MARK);
+  setPixel(13,2, MARK);
+  setPixel(14,2, MARK);
+  setPixel(12,3, MARK);
+  setPixel(13,3, MARK);
+  setPixel(12,4, MARK);
+  setPixel(14,4, MARK);
   
   //E
-  setPixel(16,0,MARK);
-  setPixel(17,0,MARK);
-  setPixel(18,0,MARK);
-  setPixel(16,1,MARK);
-  setPixel(16,2,MARK);
-  setPixel(17,2,MARK);
-  setPixel(18,2,MARK);
-  setPixel(16,3,MARK);
-  setPixel(16,4,MARK);
-  setPixel(17,4,MARK);
-  setPixel(18,4,MARK);
+  setPixel(16,0, MARK);
+  setPixel(17,0, MARK);
+  setPixel(18,0, MARK);
+  setPixel(16,1, MARK);
+  setPixel(16,2, MARK);
+  setPixel(17,2, MARK);
+  setPixel(18,2, MARK);
+  setPixel(16,3, MARK);
+  setPixel(16,4, MARK);
+  setPixel(17,4, MARK);
+  setPixel(18,4, MARK);
 
   //:
-  setPixel(20,1,MARK);
-  setPixel(20,3,MARK);
+  setPixel(20,1, MARK);
+  setPixel(20,3, MARK);
 }
 
 // shows the value of score in a desired position(x,y)
