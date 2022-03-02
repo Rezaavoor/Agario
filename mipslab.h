@@ -65,6 +65,8 @@ void moveAgario(int xOffset, int yOffset);
 void checkHit();
 void showScore(int score);
 int score;
+int difficulty, EASY, MEDIUM, HARD;
+void changeDifficulty(int diff);
 int gameMode, START, IN_GAME, GAME_OVER, WIN;
 void showDigit(int score, int x, int y);
 int MARK, UNMARK;

@@ -14,7 +14,7 @@
 int timeoutcount2 = 0; // counter for Timer2
 int timeoutcount3 = 0; // counter for Timer3
 int counter = 0x00;    // counter that is shown by LEDs
-int wait = 1;          // disables buttons when 1 (works like semaphore )
+int disableButtons = 1;          // disables buttons when 1 (works like semaphore )
 int menuCounter = 0;   // acts as sort of a delay
 
 /* Lab-specific initialization goes here */
@@ -57,30 +57,44 @@ void labwork( void )
     timeoutcount3++;
     if(timeoutcount3==5){
       int btnData = getbtns();
+      int swData = getsw();
 
+      //read switches
+      if(swData == 1 || swData == 0){ // EASY
+        changeDifficulty(EASY);
+      }
+      if(swData == 3){ // MEDIUM
+        changeDifficulty(MEDIUM);
+      }
+      if(swData == 7){ // HARD
+        changeDifficulty(HARD); 
+      }
+      
+
+      // read buttons
       if(gameMode == IN_GAME){
         // game mode
         if(btnData & 8){  // 1000
-          moveAgario(-1, 0);
+          moveAgario(-2, 0);
         }
         if(btnData & 4){  // 0100
-          moveAgario(0, 1);
+          moveAgario(0, 2);
         }
         if(btnData & 2){  // 0010
-          moveAgario(0, -1);
+          moveAgario(0, -2);
         }
         if(btnData & 1){  // 0001
-          moveAgario(1, 0);
+          moveAgario(2, 0);
         }
       }
       else if(gameMode == GAME_OVER || gameMode == WIN){
         // start over the game
-        if(!wait){ // not wait = buttons are enabled and you can change game mode
+        if(!disableButtons){ // not disableButtons = buttons are enabled and you can change game mode
           if ( btnData != 0){
             gameMode = IN_GAME;
             score = 0;
             setupScreen();
-            wait = 1;
+            disableButtons = 1;
             menuCounter = 0;
           }
         }
@@ -95,7 +109,7 @@ void labwork( void )
 
     IFS(0) &= 0xfffffeff; // 1110 1111 1111 reset the bit 8
     timeoutcount2++;
-    if(timeoutcount2==8){
+    if(timeoutcount2==5){
       //LEDs shining
       PORTE = counter;
       counter += 0x1; // +1   
@@ -107,11 +121,11 @@ void labwork( void )
         checkHit();
 
         // the default directions are like below, but new rectangles will have random directions
-        moveRect(0, 1, 1);
-        moveRect(1, 4, 2);
-        moveRect(2, -2, 1);
-        moveRect(3, 1, 0);
-        moveRect(4, 1, -3);
+        moveRect(0, 1+difficulty, 1+difficulty);
+        moveRect(1, 2+difficulty, 0+difficulty);
+        moveRect(2, -1-difficulty, 1+difficulty);
+        moveRect(3, 1+difficulty, -1-difficulty);
+        moveRect(4, -1-difficulty, -2-difficulty);
         //moveRect(5, 4, 1);
         
         markAgario(MARK);
@@ -120,7 +134,7 @@ void labwork( void )
         display_image(0, screen);
       }
       else if(gameMode == GAME_OVER){
-        wait = 1;
+        disableButtons = 1;
         if(menuCounter< 2){
           clearScreen();
           display_string(0, "    Game Over");
@@ -134,7 +148,7 @@ void labwork( void )
           if(score<10)
             showDigit(score, 64, 18);
           else{
-            showDigit(score%10, 65, 18);
+            showDigit(score%10, 68, 18);
             showDigit(score/10, 63, 18);
           }
           display_image(0, screen);
@@ -144,12 +158,12 @@ void labwork( void )
           display_string(0, "Press any button");
           display_string(1, "  to play again");
           display_update();
-          wait = 0;
+          disableButtons = 0;
         }
         menuCounter++;
       }
       else if(gameMode == WIN){
-         wait = 1;
+         disableButtons = 1;
         if(menuCounter< 2){
           clearScreen();
           display_string(0, " U R DA WINNER!");
@@ -163,7 +177,7 @@ void labwork( void )
           if(score<10)
             showDigit(score, 64, 18);
           else{
-            showDigit(score%10, 65, 18);
+            showDigit(score%10, 68, 18);
             showDigit(score/10, 63, 18);
           }
           display_image(0, screen);
@@ -173,7 +187,7 @@ void labwork( void )
           display_string(0, "Press any button");
           display_string(1, "  to play again");
           display_update();
-          wait = 0;
+          disableButtons = 0;
         }
         menuCounter++;
       }
