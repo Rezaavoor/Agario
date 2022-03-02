@@ -6,7 +6,11 @@
 float rectangles[30][3];  // 30 empty spots each storing information for one rectangle(x,y,s)
 int rectanglesIndex = 0;  // number of rectangles in the screen
 float agario[3];  // information of Agario(x,y,s)
+
 int score = 0;
+
+int EASY = 0, MEDIUM = 1, HARD = 2;
+int difficulty = 0;
 
 int START = 0, IN_GAME = 1, GAME_OVER = 2, WIN = 3; // states of the game
 int gameMode = 0; // START
@@ -17,6 +21,13 @@ int MARK = 1, UNMARK = 0;
 int randomGen(int min, int max){
   int randomNumber = (TMR3 / TMR2) * rectanglesIndex + agario[0] - agario[1];
   return (randomNumber % (max - min + 1)) + min;
+}
+
+void changeDifficulty(int diff){
+  if(difficulty != diff){
+    difficulty = diff;
+    gameMode = START;
+  }
 }
 
 // clears screen
@@ -39,8 +50,8 @@ void setupScreen(){
   createAgario();  
   rectanglesIndex = 0;
   markRect(10 + (randomGen(0, 117)), 3+ (randomGen(0, 29)), 8+ (randomGen(0, 3)));
-  markRect(25 + (randomGen(0, 102)), 10+ (randomGen(0, 22)), 8+ (randomGen(0, 4)));
-  markRect(15 + (randomGen(0, 113)), 15+ (randomGen(0, 17)), 2+ (randomGen(0, 4)));
+  markRect(100 + (randomGen(0, 27)), 10+ (randomGen(0, 22)), 3+ (randomGen(0, 4)));
+  markRect(70 + (randomGen(0, 57)), 15+ (randomGen(0, 17)), 2+ (randomGen(0, 4)));
   markRect(10 + (randomGen(0, 117)), 17+ (randomGen(0, 15)), 1+ (randomGen(0, 4)));
   markRect(0 + (randomGen(0, 127)), 20+ (randomGen(0, 12)), 1+ (randomGen(0, 4)));
   //markRect(4 + (randomGen(0, 123)), 7+ (randomGen(0, 25)), 1+ (randomGen(0, 4)));
@@ -219,7 +230,7 @@ void moveAgario(int xOffset, int yOffset){
 // clears scoreboard located at top-left
 void clearScoreboard(){
   int i,j;
-  for(i=0; i<29; i++){
+  for(i=0; i<31; i++){
     for(j=0; j<5; j++){
       setPixel(i,j, UNMARK);
     }
@@ -440,7 +451,7 @@ void showScore(int score){
   if(score<10)
     showDigit(score, 23, 0);
   else{
-    showDigit(score%10, 27, 0);
+    showDigit(score%10, 28, 0);
     showDigit(score/10, 23, 0);
   }
 }
@@ -453,20 +464,33 @@ void eatOrBeFed(int index){
     //eat
     unmarkRect(index);
     markAgario(UNMARK);
-    if(index == 0 || index == 1){
-      rectangles[index][2] = agario[2] + randomGen(0, 5);
-    }
-    else {
-      rectangles[index][2] += randomGen(0, (10-(rectangles[index][2]) ) );
-    }
-    rectangles[index][0] += randomGen(0, (127-(rectangles[index][0]) ) );
-    rectangles[index][1] += randomGen(0, (32-(rectangles[index][1]) ) );
 
     agario[2] += (recS + 1.0)/agarS; // growth depends on rectangles size
     score++; // +1 on score for each meal!
+
+    if(difficulty != EASY){
+      if(index == 0 || index == 1){
+        rectangles[index][2] = agario[2] + randomGen(0, 5);
+      }
+      else {
+        rectangles[index][2] = randomGen(0, agario[2]);
+      }
+    }
+    else{
+      if(index == 0){
+        rectangles[index][2] = agario[2] + randomGen(0, 5);
+      }
+      else {
+        rectangles[index][2] = randomGen(0, agario[2]);
+      }
+    }
+
+    rectangles[index][0] += randomGen(0, (127-(rectangles[index][0]) ) );
+    rectangles[index][1] += randomGen(0, (32-(rectangles[index][1]) ) );
+
     
     //check win possibility based on Agario's size
-    if(agario[2] >= 10){
+    if(agario[2] >= 13){
       gameMode = WIN;
     }
 
