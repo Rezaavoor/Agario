@@ -500,6 +500,7 @@ void eatOrBeFed(int index){
   else {
     //be fed = game over
     gameMode = GAME_OVER;
+    delay(10);
   }
 }
 
