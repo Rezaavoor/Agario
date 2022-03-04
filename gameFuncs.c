@@ -25,6 +25,7 @@ int randomGen(int min, int max){
 
 void changeDifficulty(int diff){
   if(difficulty != diff){
+    menuCounter = 0;
     difficulty = diff;
     gameMode = START;
   }
@@ -470,7 +471,7 @@ void eatOrBeFed(int index){
 
     if(difficulty != EASY){
       if(index == 0 || index == 1){
-        rectangles[index][2] = agario[2] + randomGen(0, 5);
+        rectangles[index][2] = agario[2] + randomGen(0, 8);
       }
       else {
         rectangles[index][2] = randomGen(0, agario[2]);
@@ -478,7 +479,7 @@ void eatOrBeFed(int index){
     }
     else{
       if(index == 0){
-        rectangles[index][2] = agario[2] + randomGen(0, 5);
+        rectangles[index][2] = agario[2] + randomGen(0, 8);
       }
       else {
         rectangles[index][2] = randomGen(0, agario[2]);

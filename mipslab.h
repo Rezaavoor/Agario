@@ -70,3 +70,4 @@ void changeDifficulty(int diff);
 int gameMode, START, IN_GAME, GAME_OVER, WIN;
 void showDigit(int score, int x, int y);
 int MARK, UNMARK;
+int menuCounter;
