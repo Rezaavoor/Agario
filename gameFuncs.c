@@ -26,6 +26,7 @@ int randomGen(int min, int max){
 void changeDifficulty(int diff){
   if(difficulty != diff){
     menuCounter = 0;
+    score = 0;
     difficulty = diff;
     gameMode = START;
   }
